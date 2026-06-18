@@ -53,6 +53,7 @@ async def on_ready():
 
     try:
         guild = discord.Object(id=GUILD_ID)
+        bot.tree.copy_global_to(guild=guild)
         synced = await bot.tree.sync(guild=guild)
         print(f"{len(synced)} commandes slash synchronisees.")
     except Exception as error:
@@ -61,8 +62,8 @@ async def on_ready():
 
 @bot.tree.command(name="service", description="Envoyer un message de service dans un salon choisi")
 @app_commands.describe(
-    salon="Salon où envoyer le message",
-    message="Message à envoyer"
+    salon="Salon ou envoyer le message",
+    message="Message a envoyer"
 )
 async def service(
     interaction: discord.Interaction,
@@ -74,8 +75,8 @@ async def service(
 
 @bot.tree.command(name="formation", description="Envoyer un message de formation dans un salon choisi")
 @app_commands.describe(
-    salon="Salon où envoyer le message",
-    message="Message à envoyer"
+    salon="Salon ou envoyer le message",
+    message="Message a envoyer"
 )
 async def formation(
     interaction: discord.Interaction,
@@ -85,25 +86,25 @@ async def formation(
     await envoyer_message_simple(interaction, salon, "Formation", message)
 
 
-@bot.tree.command(name="reunion", description="Envoyer un message de réunion dans un salon choisi")
+@bot.tree.command(name="reunion", description="Envoyer un message de reunion dans un salon choisi")
 @app_commands.describe(
-    salon="Salon où envoyer le message",
-    message="Message à envoyer"
+    salon="Salon ou envoyer le message",
+    message="Message a envoyer"
 )
 async def reunion(
     interaction: discord.Interaction,
     salon: discord.TextChannel,
     message: str
 ):
-    await envoyer_message_simple(interaction, salon, "Réunion", message)
+    await envoyer_message_simple(interaction, salon, "Reunion", message)
 
 
-@bot.tree.command(name="entretien", description="Créer une session d'entretien")
+@bot.tree.command(name="entretien", description="Creer une session d'entretien")
 @app_commands.describe(
-    salon="Salon où envoyer l'entretien",
+    salon="Salon ou envoyer l'entretien",
     date="Date de l'entretien, exemple : 25/06/2026",
     heure="Heure de l'entretien, exemple : 18:00",
-    assistant="Assistant présent à l'entretien, optionnel"
+    assistant="Assistant present a l'entretien, optionnel"
 )
 async def entretien(
     interaction: discord.Interaction,
@@ -114,10 +115,10 @@ async def entretien(
 ):
     await interaction.response.defer(ephemeral=True)
 
-    assistant_texte = assistant.mention if assistant else "Aucun assistant prévu"
+    assistant_texte = assistant.mention if assistant else "Aucun assistant prevu"
 
     embed = discord.Embed(
-        title="Création d'une session d'entretien",
+        title="Creation d'une session d'entretien",
         description=(
             f"**Date :** {date}\n"
             f"**Heure :** {heure}\n"
@@ -126,24 +127,24 @@ async def entretien(
         color=discord.Color.blue()
     )
 
-    embed.set_footer(text="Service Départemental de l'Ariège")
+    embed.set_footer(text="Service Departemental de l'Ariege")
 
     await salon.send(embed=embed)
 
     await interaction.followup.send(
-        f"Session d'entretien envoyée dans {salon.mention}.",
+        f"Session d'entretien envoyee dans {salon.mention}.",
         ephemeral=True
     )
 
 
-@bot.tree.command(name="resultat", description="Envoyer un message de résultats dans un salon choisi")
+@bot.tree.command(name="resultat", description="Envoyer un message de resultats dans un salon choisi")
 @app_commands.describe(
-    salon="Salon où envoyer les résultats",
-    date="Date des résultats, exemple : 18/06/2026",
-    heure="Heure des résultats, exemple : 20h00",
+    salon="Salon ou envoyer les resultats",
+    date="Date des resultats, exemple : 18/06/2026",
+    heure="Heure des resultats, exemple : 20h00",
     formation="Nom de la formation",
-    admis="Personnes admises, séparées par des virgules",
-    non_admis="Personnes non admises, séparées par des virgules",
+    admis="Personnes admises, separees par des virgules",
+    non_admis="Personnes non admises, separees par des virgules",
     notes="Notes, exemple : Jean 16/20, Lucas 9/20"
 )
 async def resultat(
@@ -159,7 +160,7 @@ async def resultat(
     await interaction.response.defer(ephemeral=True)
 
     embed = discord.Embed(
-        title="Résultats de formation",
+        title="Resultats de formation",
         color=discord.Color.green()
     )
 
@@ -170,12 +171,12 @@ async def resultat(
     embed.add_field(name="Non admis", value=liste_texte(non_admis), inline=False)
     embed.add_field(name="Notes", value=liste_texte(notes), inline=False)
 
-    embed.set_footer(text="Service Départemental de l'Ariège")
+    embed.set_footer(text="Service Departemental de l'Ariege")
 
     await salon.send(embed=embed)
 
     await interaction.followup.send(
-        f"Résultats envoyés dans {salon.mention}.",
+        f"Resultats envoyes dans {salon.mention}.",
         ephemeral=True
     )
 
