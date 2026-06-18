@@ -29,8 +29,19 @@ async def envoyer_message_simple(
     titre: str,
     message: str
 ):
-    await salon.send(f"**{titre.upper()}**\n{message}")
-    await interaction.response.send_message(
+    await interaction.response.defer(ephemeral=True)
+
+    embed = discord.Embed(
+        title=titre,
+        description=message,
+        color=discord.Color.green()
+    )
+
+    embed.set_footer(text="Service Départemental de l'Ariège")
+
+    await salon.send(embed=embed)
+
+    await interaction.followup.send(
         f"Message envoyé dans {salon.mention}.",
         ephemeral=True
     )
@@ -42,7 +53,6 @@ async def on_ready():
 
     try:
         guild = discord.Object(id=GUILD_ID)
-        bot.tree.copy_global_to(guild=guild)
         synced = await bot.tree.sync(guild=guild)
         print(f"{len(synced)} commandes slash synchronisees.")
     except Exception as error:
@@ -75,19 +85,6 @@ async def formation(
     await envoyer_message_simple(interaction, salon, "Formation", message)
 
 
-@bot.tree.command(name="entretien", description="Envoyer un message d'entretien dans un salon choisi")
-@app_commands.describe(
-    salon="Salon où envoyer le message",
-    message="Message à envoyer"
-)
-async def entretien(
-    interaction: discord.Interaction,
-    salon: discord.TextChannel,
-    message: str
-):
-    await envoyer_message_simple(interaction, salon, "Entretien", message)
-
-
 @bot.tree.command(name="reunion", description="Envoyer un message de réunion dans un salon choisi")
 @app_commands.describe(
     salon="Salon où envoyer le message",
@@ -99,6 +96,44 @@ async def reunion(
     message: str
 ):
     await envoyer_message_simple(interaction, salon, "Réunion", message)
+
+
+@bot.tree.command(name="entretien", description="Créer une session d'entretien")
+@app_commands.describe(
+    salon="Salon où envoyer l'entretien",
+    date="Date de l'entretien, exemple : 25/06/2026",
+    heure="Heure de l'entretien, exemple : 18:00",
+    assistant="Assistant présent à l'entretien, optionnel"
+)
+async def entretien(
+    interaction: discord.Interaction,
+    salon: discord.TextChannel,
+    date: str,
+    heure: str,
+    assistant: discord.Member = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    assistant_texte = assistant.mention if assistant else "Aucun assistant prévu"
+
+    embed = discord.Embed(
+        title="Création d'une session d'entretien",
+        description=(
+            f"**Date :** {date}\n"
+            f"**Heure :** {heure}\n"
+            f"**Assistant :** {assistant_texte}"
+        ),
+        color=discord.Color.blue()
+    )
+
+    embed.set_footer(text="Service Départemental de l'Ariège")
+
+    await salon.send(embed=embed)
+
+    await interaction.followup.send(
+        f"Session d'entretien envoyée dans {salon.mention}.",
+        ephemeral=True
+    )
 
 
 @bot.tree.command(name="resultat", description="Envoyer un message de résultats dans un salon choisi")
@@ -121,6 +156,8 @@ async def resultat(
     non_admis: str,
     notes: str
 ):
+    await interaction.response.defer(ephemeral=True)
+
     embed = discord.Embed(
         title="Résultats de formation",
         color=discord.Color.green()
@@ -133,9 +170,11 @@ async def resultat(
     embed.add_field(name="Non admis", value=liste_texte(non_admis), inline=False)
     embed.add_field(name="Notes", value=liste_texte(notes), inline=False)
 
+    embed.set_footer(text="Service Départemental de l'Ariège")
+
     await salon.send(embed=embed)
 
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"Résultats envoyés dans {salon.mention}.",
         ephemeral=True
     )
