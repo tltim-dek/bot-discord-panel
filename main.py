@@ -19,30 +19,48 @@ app = Flask(__name__)
 def liste_texte(valeur):
     elements = [item.strip() for item in valeur.split(",") if item.strip()]
     if not elements:
-        return "Aucun"
-    return "\n".join(f"- {item}" for item in elements)
+        return "N/A"
+    return "\n".join(elements)
 
 
-async def envoyer_message_simple(
+def mention_role(role):
+    return role.mention if role else ""
+
+
+def signature():
+    return (
+        "Cordialement,\n"
+        "Le Service des Ressources Humaines\n"
+        "Service Departemental de l'Ariege"
+    )
+
+
+def creer_notification(titre, description, couleur=discord.Color.blue()):
+    embed = discord.Embed(
+        title=titre,
+        description=description,
+        color=couleur
+    )
+    embed.set_footer(text="Service Departemental de l'Ariege")
+    return embed
+
+
+async def envoyer_notification(
     interaction: discord.Interaction,
     salon: discord.TextChannel,
-    titre: str,
-    message: str
+    role: discord.Role,
+    embed: discord.Embed
 ):
     await interaction.response.defer(ephemeral=True)
 
-    embed = discord.Embed(
-        title=titre,
-        description=message,
-        color=discord.Color.green()
+    await salon.send(
+        content=mention_role(role),
+        embed=embed,
+        allowed_mentions=discord.AllowedMentions(roles=True)
     )
 
-    embed.set_footer(text="Service Départemental de l'Ariège")
-
-    await salon.send(embed=embed)
-
     await interaction.followup.send(
-        f"Message envoyé dans {salon.mention}.",
+        f"Notification envoyee dans {salon.mention}.",
         ephemeral=True
     )
 
@@ -60,84 +78,127 @@ async def on_ready():
         print(f"Erreur sync commandes slash : {error}")
 
 
-@bot.tree.command(name="service", description="Envoyer un message de service dans un salon choisi")
+@bot.tree.command(name="service", description="Envoyer une notification de service")
 @app_commands.describe(
-    salon="Salon ou envoyer le message",
-    message="Message a envoyer"
+    salon="Salon ou envoyer la notification",
+    message="Message de service",
+    role="Role a mentionner, optionnel"
 )
 async def service(
     interaction: discord.Interaction,
     salon: discord.TextChannel,
-    message: str
+    message: str,
+    role: discord.Role = None
 ):
-    await envoyer_message_simple(interaction, salon, "Service", message)
+    description = (
+        "Le Service Departemental de l'Ariege vous communique une information de service.\n\n"
+        f"{message}\n\n"
+        "Pour toute question ou demande d'information complementaire, le service reste a votre disposition.\n\n"
+        f"{signature()}"
+    )
+
+    embed = creer_notification(
+        "Notification Service - Service Departemental de l'Ariege",
+        description,
+        discord.Color.blue()
+    )
+
+    await envoyer_notification(interaction, salon, role, embed)
 
 
-@bot.tree.command(name="formation", description="Envoyer un message de formation dans un salon choisi")
+@bot.tree.command(name="formation", description="Envoyer une notification de formation")
 @app_commands.describe(
-    salon="Salon ou envoyer le message",
-    message="Message a envoyer"
+    salon="Salon ou envoyer la notification",
+    message="Message de formation",
+    role="Role a mentionner, optionnel"
 )
 async def formation(
     interaction: discord.Interaction,
     salon: discord.TextChannel,
-    message: str
+    message: str,
+    role: discord.Role = None
 ):
-    await envoyer_message_simple(interaction, salon, "Formation", message)
+    description = (
+        "Le Service Departemental de l'Ariege vous communique une information relative a une formation.\n\n"
+        f"{message}\n\n"
+        "Les personnes concernees sont invitees a prendre connaissance des informations transmises.\n\n"
+        f"{signature()}"
+    )
+
+    embed = creer_notification(
+        "Notification Formation - Service Departemental de l'Ariege",
+        description,
+        discord.Color.green()
+    )
+
+    await envoyer_notification(interaction, salon, role, embed)
 
 
-@bot.tree.command(name="reunion", description="Envoyer un message de reunion dans un salon choisi")
+@bot.tree.command(name="reunion", description="Envoyer une notification de reunion")
 @app_commands.describe(
-    salon="Salon ou envoyer le message",
-    message="Message a envoyer"
+    salon="Salon ou envoyer la notification",
+    message="Message de reunion",
+    role="Role a mentionner, optionnel"
 )
 async def reunion(
     interaction: discord.Interaction,
     salon: discord.TextChannel,
-    message: str
+    message: str,
+    role: discord.Role = None
 ):
-    await envoyer_message_simple(interaction, salon, "Reunion", message)
+    description = (
+        "Le Service Departemental de l'Ariege vous informe de la tenue d'une reunion.\n\n"
+        f"{message}\n\n"
+        "Les personnes concernees sont priees de se rendre disponibles aux horaires indiques.\n\n"
+        f"{signature()}"
+    )
+
+    embed = creer_notification(
+        "Notification Reunion - Service Departemental de l'Ariege",
+        description,
+        discord.Color.purple()
+    )
+
+    await envoyer_notification(interaction, salon, role, embed)
 
 
-@bot.tree.command(name="entretien", description="Creer une session d'entretien")
+@bot.tree.command(name="entretien", description="Creer une notification d'entretien")
 @app_commands.describe(
     salon="Salon ou envoyer l'entretien",
     date="Date de l'entretien, exemple : 25/06/2026",
     heure="Heure de l'entretien, exemple : 18:00",
-    assistant="Assistant present a l'entretien, optionnel"
+    assistant="Assistant present a l'entretien, optionnel",
+    role="Role a mentionner, optionnel"
 )
 async def entretien(
     interaction: discord.Interaction,
     salon: discord.TextChannel,
     date: str,
     heure: str,
-    assistant: discord.Member = None
+    assistant: discord.Member = None,
+    role: discord.Role = None
 ):
-    await interaction.response.defer(ephemeral=True)
-
     assistant_texte = assistant.mention if assistant else "Aucun assistant prevu"
 
-    embed = discord.Embed(
-        title="Creation d'une session d'entretien",
-        description=(
-            f"**Date :** {date}\n"
-            f"**Heure :** {heure}\n"
-            f"**Assistant :** {assistant_texte}"
-        ),
-        color=discord.Color.blue()
+    description = (
+        "Le Service Departemental de l'Ariege vous informe de la creation d'une session d'entretien.\n\n"
+        f"**Date :** {date}\n"
+        f"**Heure :** {heure}\n"
+        f"**Assistant :** {assistant_texte}\n\n"
+        "La personne concernee est invitee a se presenter a l'heure indiquee.\n\n"
+        f"{signature()}"
     )
 
-    embed.set_footer(text="Service Departemental de l'Ariege")
-
-    await salon.send(embed=embed)
-
-    await interaction.followup.send(
-        f"Session d'entretien envoyee dans {salon.mention}.",
-        ephemeral=True
+    embed = creer_notification(
+        "Notification Entretien - Service Departemental de l'Ariege",
+        description,
+        discord.Color.blue()
     )
 
+    await envoyer_notification(interaction, salon, role, embed)
 
-@bot.tree.command(name="resultat", description="Envoyer un message de resultats dans un salon choisi")
+
+@bot.tree.command(name="resultat", description="Publier les resultats d'une formation")
 @app_commands.describe(
     salon="Salon ou envoyer les resultats",
     date="Date des resultats, exemple : 18/06/2026",
@@ -145,7 +206,8 @@ async def entretien(
     formation="Nom de la formation",
     admis="Personnes admises, separees par des virgules",
     non_admis="Personnes non admises, separees par des virgules",
-    notes="Notes, exemple : Jean 16/20, Lucas 9/20"
+    notes="Notes, exemple : Jean 16/20, Lucas 9/20",
+    role="Role a mentionner, optionnel"
 )
 async def resultat(
     interaction: discord.Interaction,
@@ -155,30 +217,33 @@ async def resultat(
     formation: str,
     admis: str,
     non_admis: str,
-    notes: str
+    notes: str,
+    role: discord.Role = None
 ):
-    await interaction.response.defer(ephemeral=True)
-
-    embed = discord.Embed(
-        title="Resultats de formation",
-        color=discord.Color.green()
+    description = (
+        "Le Service Departemental de l'Ariege a l'honneur de vous communiquer les resultats des candidatures.\n\n"
+        "Apres etude des dossiers, les decisions suivantes ont ete prises.\n\n"
+        f"**Date :** {date}\n"
+        f"**Heure :** {heure}\n"
+        f"**Formation :** {formation}\n\n"
+        "*Candidat admis*\n"
+        f"{liste_texte(admis)}\n\n"
+        "*Candidat non admis*\n"
+        f"{liste_texte(non_admis)}\n\n"
+        "**Notes**\n"
+        f"{liste_texte(notes)}\n\n"
+        "Pour toute question ou demande d'information complementaire, le service reste a votre disposition.\n"
+        "Nous vous remercions pour l'interet porte a notre structure et vous souhaitons une bonne journee.\n\n"
+        f"{signature()}"
     )
 
-    embed.add_field(name="Date", value=date, inline=True)
-    embed.add_field(name="Heure", value=heure, inline=True)
-    embed.add_field(name="Formation", value=formation, inline=False)
-    embed.add_field(name="Admis", value=liste_texte(admis), inline=False)
-    embed.add_field(name="Non admis", value=liste_texte(non_admis), inline=False)
-    embed.add_field(name="Notes", value=liste_texte(notes), inline=False)
-
-    embed.set_footer(text="Service Departemental de l'Ariege")
-
-    await salon.send(embed=embed)
-
-    await interaction.followup.send(
-        f"Resultats envoyes dans {salon.mention}.",
-        ephemeral=True
+    embed = creer_notification(
+        "Notification Resultats - Service Departemental de l'Ariege",
+        description,
+        discord.Color.green()
     )
+
+    await envoyer_notification(interaction, salon, role, embed)
 
 
 @app.get("/")
