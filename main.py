@@ -91,9 +91,16 @@ async def service(
     role: discord.Role = None
 ):
     description = (
-        "Le Service Departemental de l'Ariege vous communique une information de service.\n\n"
+        "Le Service Departemental de l'Ariege souhaite porter a votre connaissance une information de service importante.\n\n"
+        "Cette communication a pour objectif de transmettre clairement les consignes, informations ou rappels necessaires "
+        "au bon fonctionnement de l'organisation interne. Les personnes concernees sont invitees a lire attentivement "
+        "le contenu de cette notification et a appliquer les indications qui y sont mentionnees.\n\n"
+        "**Information communiquee**\n"
         f"{message}\n\n"
-        "Pour toute question ou demande d'information complementaire, le service reste a votre disposition.\n\n"
+        "Il est demande a chacun de prendre en compte cette information dans les meilleurs delais. En cas de doute, "
+        "de question ou de besoin de precision supplementaire, vous pouvez vous rapprocher d'un responsable afin "
+        "d'obtenir les renseignements necessaires.\n\n"
+        "Nous vous remercions pour votre attention, votre serieux et votre cooperation dans le respect des consignes transmises.\n\n"
         f"{signature()}"
     )
 
@@ -119,9 +126,16 @@ async def formation(
     role: discord.Role = None
 ):
     description = (
-        "Le Service Departemental de l'Ariege vous communique une information relative a une formation.\n\n"
+        "Le Service Departemental de l'Ariege vous informe de la publication d'une communication relative a une formation.\n\n"
+        "Cette notification concerne l'organisation, le suivi ou le deroulement d'un module de formation. Les agents concernes "
+        "sont invites a prendre connaissance des informations transmises afin de se preparer dans les meilleures conditions "
+        "et de respecter les attentes fixees par l'equipe encadrante.\n\n"
+        "**Information de formation**\n"
         f"{message}\n\n"
-        "Les personnes concernees sont invitees a prendre connaissance des informations transmises.\n\n"
+        "La formation constitue une etape importante dans la progression de chaque agent. Il est donc attendu que les personnes "
+        "concernees fassent preuve d'assiduite, de serieux et d'implication tout au long du processus. Toute absence, retard "
+        "ou difficulte particuliere doit etre signalee rapidement a un responsable.\n\n"
+        "Nous vous remercions pour votre engagement et vous invitons a suivre attentivement les indications communiquees.\n\n"
         f"{signature()}"
     )
 
@@ -147,9 +161,15 @@ async def reunion(
     role: discord.Role = None
 ):
     description = (
-        "Le Service Departemental de l'Ariege vous informe de la tenue d'une reunion.\n\n"
+        "Le Service Departemental de l'Ariege vous informe de la tenue d'une reunion ou d'un point d'organisation.\n\n"
+        "Cette reunion a pour objectif de rassembler les personnes concernees afin d'echanger sur les informations importantes, "
+        "les consignes a appliquer, les decisions a prendre ou les elements necessaires au bon fonctionnement du service.\n\n"
+        "**Informations relatives a la reunion**\n"
         f"{message}\n\n"
-        "Les personnes concernees sont priees de se rendre disponibles aux horaires indiques.\n\n"
+        "Les personnes mentionnees ou concernees par cette notification sont priees de se rendre disponibles et de se presenter "
+        "dans de bonnes conditions. La ponctualite, l'ecoute et le respect des consignes donnees sont attendus afin de permettre "
+        "un deroulement clair, efficace et organise.\n\n"
+        "En cas d'indisponibilite, il est demande de prevenir rapidement un responsable afin que l'information puisse etre prise en compte.\n\n"
         f"{signature()}"
     )
 
@@ -182,10 +202,18 @@ async def entretien(
 
     description = (
         "Le Service Departemental de l'Ariege vous informe de la creation d'une session d'entretien.\n\n"
+        "Cet entretien a pour objectif d'echanger avec la personne concernee, d'evaluer sa situation, sa motivation, "
+        "son comportement ou son avancement selon le cadre prevu par le service. Il s'agit d'une etape importante "
+        "dans le suivi administratif et humain du candidat ou de l'agent concerne.\n\n"
+        "**Informations de convocation**\n"
         f"**Date :** {date}\n"
         f"**Heure :** {heure}\n"
         f"**Assistant :** {assistant_texte}\n\n"
-        "La personne concernee est invitee a se presenter a l'heure indiquee.\n\n"
+        "La personne convoquee est invitee a se presenter a l'heure indiquee, dans de bonnes conditions et avec le serieux attendu. "
+        "Il est demande de respecter l'horaire fixe afin de garantir le bon deroulement de la session et de ne pas perturber "
+        "l'organisation prevue par les responsables.\n\n"
+        "En cas d'indisponibilite ou de difficulte particuliere, la personne concernee doit se rapprocher rapidement d'un responsable "
+        "afin que la situation puisse etre etudiee.\n\n"
         f"{signature()}"
     )
 
@@ -196,6 +224,65 @@ async def entretien(
     )
 
     await envoyer_notification(interaction, salon, role, embed)
+
+
+@bot.tree.command(name="examen", description="Envoyer une convocation a un examen")
+@app_commands.describe(
+    salon="Salon ou envoyer la convocation",
+    candidat="Candidat a convoquer",
+    date="Date de l'examen, exemple : 25/06/2026",
+    heure="Heure de l'examen, exemple : 18:00",
+    module="Module ou formation concernee",
+    role="Role a mentionner en plus, optionnel"
+)
+async def examen(
+    interaction: discord.Interaction,
+    salon: discord.TextChannel,
+    candidat: discord.Member,
+    date: str,
+    heure: str,
+    module: str,
+    role: discord.Role = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    role_texte = f" {role.mention}" if role else ""
+
+    description = (
+        "Le Service Departemental de l'Ariege vous informe qu'une convocation a un examen a ete emise.\n\n"
+        f"**Candidat convoque :** {candidat.mention}\n"
+        f"**Module concerne :** {module}\n"
+        f"**Date :** {date}\n"
+        f"**Heure :** {heure}\n\n"
+        "Votre progression dans le module de formation concerne ayant ete jugee suffisante par l'equipe encadrante, "
+        "vous etes officiellement convoque afin de proceder au passage de votre examen.\n\n"
+        "Cette convocation marque l'etape finale de votre parcours de formation pour le module indique ci-dessus. "
+        "Il vous est donc demande de vous rendre disponible a la date et a l'heure prevues, et de vous presenter "
+        "dans de bonnes conditions afin de realiser votre evaluation.\n\n"
+        "L'examen permettra d'evaluer vos connaissances, votre comprehension du module ainsi que votre capacite a appliquer "
+        "les consignes et procedures vues durant la formation. Il est attendu de votre part une attitude serieuse, respectueuse "
+        "et conforme aux exigences du service.\n\n"
+        "En cas d'indisponibilite ou de difficulte particuliere, vous etes invite a vous rapprocher rapidement d'un responsable "
+        "afin que la situation puisse etre prise en compte avant la date prevue.\n\n"
+        f"{signature()}"
+    )
+
+    embed = creer_notification(
+        "Convocation Examen - Service Departemental de l'Ariege",
+        description,
+        discord.Color.gold()
+    )
+
+    await salon.send(
+        content=f"{candidat.mention}{role_texte}",
+        embed=embed,
+        allowed_mentions=discord.AllowedMentions(users=True, roles=True)
+    )
+
+    await interaction.followup.send(
+        f"Convocation envoyee dans {salon.mention}.",
+        ephemeral=True
+    )
 
 
 @bot.tree.command(name="resultat", description="Publier les resultats d'une formation")
@@ -222,18 +309,24 @@ async def resultat(
 ):
     description = (
         "Le Service Departemental de l'Ariege a l'honneur de vous communiquer les resultats des candidatures.\n\n"
-        "Apres etude des dossiers, les decisions suivantes ont ete prises.\n\n"
+        "Apres etude des dossiers, analyse des evaluations et prise en compte des elements transmis par l'equipe encadrante, "
+        "les decisions suivantes ont ete prises concernant le module ou la formation indiquee ci-dessous.\n\n"
         f"**Date :** {date}\n"
         f"**Heure :** {heure}\n"
         f"**Formation :** {formation}\n\n"
-        "*Candidat admis*\n"
+        "**Candidat admis**\n"
         f"{liste_texte(admis)}\n\n"
-        "*Candidat non admis*\n"
+        "**Candidat non admis**\n"
         f"{liste_texte(non_admis)}\n\n"
         "**Notes**\n"
         f"{liste_texte(notes)}\n\n"
-        "Pour toute question ou demande d'information complementaire, le service reste a votre disposition.\n"
-        "Nous vous remercions pour l'interet porte a notre structure et vous souhaitons une bonne journee.\n\n"
+        "Les candidats admis sont felicites pour leur travail, leur implication et les efforts fournis durant le parcours de formation. "
+        "Ils sont invites a poursuivre leur engagement avec le meme serieux dans les prochaines etapes qui leur seront communiquees.\n\n"
+        "Les candidats non admis sont encourages a poursuivre leurs efforts. Une non-admission ne constitue pas une fin definitive, "
+        "mais une indication qu'un travail supplementaire, un accompagnement ou une nouvelle evaluation peut etre necessaire selon "
+        "les decisions prises par les responsables.\n\n"
+        "Pour toute question ou demande d'information complementaire, le service reste a votre disposition. Nous vous remercions "
+        "pour l'interet porte a notre structure et vous souhaitons une bonne continuation.\n\n"
         f"{signature()}"
     )
 
